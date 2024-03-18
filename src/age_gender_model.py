@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import os
 
 
 class AgeGenderNet(nn.Module):
@@ -52,11 +53,9 @@ class AgeGenderNet(nn.Module):
         x = self.bn4(x)
         x = F.relu(x)
         x = self.max_pool4(x)
-        print(x.shape)
         assert x.shape[1:] == (256, 13, 13)
 
         x = self.flatten(x)
-        print(x.shape)
 
         out1 = self.linear11(x)
         out1 = self.dropout1(out1)
@@ -69,6 +68,12 @@ class AgeGenderNet(nn.Module):
         out2 = F.relu(out2)  # age
 
         return out1, out2
+
+    def save(self, filename='model.pth'):
+        folder_path = '../age-gender-model'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        torch.save(self.state_dict(), filename)
 
 
 if __name__ == "__main__":

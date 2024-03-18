@@ -3,10 +3,10 @@ from torch.utils.data import Dataset
 import os
 import cv2
 from torchvision import transforms
-from enum import Enum
+from enum import IntEnum
 
 
-class Emotion(Enum):
+class Emotion(IntEnum):
     ANGRY = 0
     DISGUST = 1
     FEAR = 2
@@ -26,6 +26,16 @@ map_emotion_to_idx = {
     'surprise': Emotion.SURPRISE
 }
 
+map_idx_to_emotion = {
+    Emotion.ANGRY: 'angry',
+    Emotion.DISGUST: 'disgust',
+    Emotion.FEAR: 'fear',
+    Emotion.HAPPY: 'happy',
+    Emotion.NEUTRAL: 'neutral',
+    Emotion.SAD: 'sad',
+    Emotion.SURPRISE: 'surprise'
+}
+
 
 class AgeGenderDataset(Dataset):
     def __init__(self, folder_path: str, transform=None):
@@ -43,14 +53,14 @@ class AgeGenderDataset(Dataset):
         image = cv2.imread(os.path.join(self.folder_path, filename))
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         data = filename.split('_')
-        age = int(data[0])
-        gender = int(data[1])
+        age = torch.tensor(float(data[0]), dtype=torch.float)
+        gender = torch.tensor(float(data[1]), dtype=torch.float)
         if self.transform:
             image = self.transform(image)
         return {'image': image, 'age': age, 'gender': gender}
 
 
-class EmotionDataLoader(Dataset):
+class EmotionDataSet(Dataset):
     def __init__(self, folder_path: str, transform=None):
         super().__init__()
         self.folder_path = folder_path
@@ -73,7 +83,7 @@ class EmotionDataLoader(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         if self.transform:
             image = self.transform(image)
-        return {'image': image, 'emotion': label}
+        return {'image': image, 'emotion': torch.tensor(int(label), dtype=torch.long)}
 
 
 if __name__ == "__main__":
@@ -87,5 +97,5 @@ if __name__ == "__main__":
                                       transforms.RandomHorizontalFlip(0.3),
                                       transforms.RandomVerticalFlip(0.3)])
     # dataset = AgeGenderDataset(folder_path_, transform_)
-    emotions = EmotionDataLoader(emotion_folder_path_, transform2_)
+    emotions = EmotionDataSet(emotion_folder_path_, transform2_)
     print(emotions.__getitem__(1))
