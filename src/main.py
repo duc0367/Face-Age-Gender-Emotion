@@ -77,9 +77,8 @@ while True:
                 boxes.append((tl, br))
 
                 (x, y), (w, h) = convert_tl_br_to_tl_wh(tl, br)
-
-                face = frame[max(0, y - 15):min(y + h + 15, height - 1), max(0, x - 15): min(x + w + 15, width - 1)]
-                face = cv2.dnn.blobFromImage(face, 1.0, (227, 227), MODEL_MEAN_VALUES, False)
+                face_origin = frame[max(0, y - 15):min(y + h + 15, height - 1), max(0, x - 15): min(x + w + 15, width - 1)]
+                face = cv2.dnn.blobFromImage(face_origin, 1.0, (227, 227), MODEL_MEAN_VALUES, False)
                 age_model.setInput(face)
                 age_predictions = age_model.forward()
                 age = la[age_predictions.argmax()]
@@ -89,7 +88,8 @@ while True:
                 gen_predictions = gen_model.forward()
                 gen = lg[gen_predictions.argmax()]
                 gens.append(gen)
-                roi_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+                roi_gray = cv2.cvtColor(face_origin, cv2.COLOR_BGR2GRAY)
                 cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
                 prediction = emotion_model.predict(cropped_img)
                 max_index = int(np.argmax(prediction))
